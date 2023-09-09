@@ -4,43 +4,58 @@ const helperWrapper = require("../../helper/wrapper");
 
 module.exports = {
   listAllOwners: async (request, response) => {
-    let data = request.body;
-    // data = data.parse();
-    const db = await connect();
-    const koleksi = db.collection("owner");
+    try {
+      let data = request.body;
+      const db = await connect();
+      const koleksi = db.collection("owner");
 
-    const page = data.page || 1;
-    const pageSize = data.pageSize || 5;
-    const sort = data.sort || { name: 1 };
-    const findwosearch = {
-      requestApprovalDeleteStatus: { $not: { $eq: "approve" } },
-    };
-    const find = {
-      $and: [
-        data.search,
-        { requestApprovalDeleteStatus: { $not: { $eq: "approve" } } },
-      ],
-    };
-    const skip = page * pageSize - pageSize;
+      const page = data.page || 1;
+      const pageSize = data.pageSize || 5;
+      const sort = data.sort || { name: 1 };
+      const findwosearch = {
+        requestApprovalDeleteStatus: { $not: { $eq: "approve" } },
+      };
+      const find = {
+        $and: [
+          data.search,
+          { requestApprovalDeleteStatus: { $not: { $eq: "approve" } } },
+        ],
+      };
+      const skip = page * pageSize - pageSize;
 
-    const totalData = await koleksi.countDocuments(
-      data.search ? find : findwosearch
-    );
+      const totalData = await koleksi.countDocuments(
+        data.search ? find : findwosearch
+      );
 
-    const result = await koleksi
-      .find(data.search ? find : findwosearch)
-      .sort(sort)
-      .skip(skip)
-      .limit(pageSize)
-      .toArray();
-    const totalPage = Math.ceil(totalData / pageSize);
-    const pagination = {
-      page,
-      pageSize,
-      totalPage,
-      totalData,
-    };
-    return helperWrapper.response(response, 201, "Created", result, pagination);
+      const result = await koleksi
+        .find(data.search ? find : findwosearch)
+        .sort(sort)
+        .skip(skip)
+        .limit(pageSize)
+        .toArray();
+      const totalPage = Math.ceil(totalData / pageSize);
+      const pagination = {
+        page,
+        pageSize,
+        totalPage,
+        totalData,
+      };
+      return helperWrapper.response(
+        response,
+        201,
+        "Get all bank",
+        result,
+        pagination
+      );
+    } catch (error) {
+      console.log(error);
+      return helperWrapper.response(
+        response,
+        500,
+        "Internal Server Error",
+        null
+      );
+    }
   },
   createTheOwner: async (request, response) => {
     try {
